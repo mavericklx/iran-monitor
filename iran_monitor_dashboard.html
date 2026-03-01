@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伊朗战争实时监控中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .fade-in { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .price-up { color: #22c55e; }
+        .price-down { color: #ef4444; }
+        .news-card { transition: all 0.3s; }
+        .news-card:hover { transform: translateX(5px); }
+        .countdown { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-red-900 via-gray-900 to-red-900 py-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🔥</span>
+                    <div>
+                        <h1 class="text-xl font-bold">伊朗战争实时监控中心</h1>
+                        <p class="text-xs text-gray-400">Iran Conflict Real-time Monitor</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <div class="text-xs text-gray-400">下次更新</div>
+                        <div class="text-lg font-bold text-yellow-400 countdown" id="countdown">10:00</div>
+                    </div>
+                    <div class="pulse-dot w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex gap-1">
+                <button onclick="showPage(1)" id="btn-page1" class="flex-1 py-3 px-4 text-center font-medium bg-red-600 text-white rounded-t-lg transition">
+                    📰 战争资讯
+                </button>
+                <button onclick="showPage(2)" id="btn-page2" class="flex-1 py-3 px-4 text-center font-medium text-gray-400 hover:text-white hover:bg-gray-700 rounded-t-lg transition">
+                    🛢️ 原油价格
+                </button>
+                <button onclick="showPage(3)" id="btn-page3" class="flex-1 py-3 px-4 text-center font-medium text-gray-400 hover:text-white hover:bg-gray-700 rounded-t-lg transition">
+                    🥇 贵金属价格
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page 1: 战争资讯 -->
+    <div id="page1" class="page-content">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <!-- Status Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-gray-800 rounded-xl p-4 border border-red-500/30">
+                    <div class="text-2xl mb-1">💀</div>
+                    <div class="text-2xl font-bold text-red-500">200+</div>
+                    <div class="text-sm text-gray-400">死亡人数</div>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-4 border border-orange-500/30">
+                    <div class="text-2xl mb-1">🌍</div>
+                    <div class="text-2xl font-bold text-orange-500">6国</div>
+                    <div class="text-sm text-gray-400">遭导弹袭击</div>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-4 border border-yellow-500/30">
+                    <div class="text-2xl mb-1">🛢️</div>
+                    <div class="text-2xl font-bold text-yellow-500">$73</div>
+                    <div class="text-sm text-gray-400">布伦特原油</div>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-4 border border-green-500/30">
+                    <div class="text-2xl mb-1">🥇</div>
+                    <div class="text-2xl font-bold text-green-500">$5,296</div>
+                    <div class="text-sm text-gray-400">黄金价格</div>
+                </div>
+            </div>
+
+            <!-- News Sources -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Sina News -->
+                <div class="bg-gray-800 rounded-xl overflow-hidden">
+                    <div class="bg-red-600 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📰</span>
+                            <span class="font-bold">新浪新闻</span>
+                        </div>
+                        <span class="text-xs bg-red-700 px-2 py-1 rounded" id="sina-time">刚刚</span>
+                    </div>
+                    <div class="p-4 space-y-3 max-h-96 overflow-y-auto" id="sina-news">
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="text-sm font-medium text-white mb-1">美以联合打击伊朗 中东局势升级</div>
+                            <div class="text-xs text-gray-400">2026-03-01 18:30</div>
+                        </div>
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="text-sm font-medium text-white mb-1">霍尔木兹海峡航运停滞 油价飙升</div>
+                            <div class="text-xs text-gray-400">2026-03-01 18:15</div>
+                        </div>
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="text-sm font-medium text-white mb-1">沙特正式参战 谴责伊朗侵犯主权</div>
+                            <div class="text-xs text-gray-400">2026-03-01 17:45</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weibo -->
+                <div class="bg-gray-800 rounded-xl overflow-hidden">
+                    <div class="bg-yellow-600 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📱</span>
+                            <span class="font-bold">微博热搜</span>
+                        </div>
+                        <span class="text-xs bg-yellow-700 px-2 py-1 rounded" id="weibo-time">刚刚</span>
+                    </div>
+                    <div class="p-4 space-y-3 max-h-96 overflow-y-auto" id="weibo-news">
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs bg-red-500 px-1.5 py-0.5 rounded">爆</span>
+                                <span class="text-sm font-medium">#伊朗战争#</span>
+                            </div>
+                            <div class="text-xs text-gray-400">阅读量 2.3亿 讨论 15.6万</div>
+                        </div>
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs bg-orange-500 px-1.5 py-0.5 rounded">热</span>
+                                <span class="text-sm font-medium">#油价上涨#</span>
+                            </div>
+                            <div class="text-xs text-gray-400">阅读量 1.8亿 讨论 8.2万</div>
+                        </div>
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs bg-yellow-500 px-1.5 py-0.5 rounded">新</span>
+                                <span class="text-sm font-medium">#黄金突破5300#</span>
+                            </div>
+                            <div class="text-xs text-gray-400">阅读量 8900万 讨论 3.5万</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WeChat -->
+                <div class="bg-gray-800 rounded-xl overflow-hidden">
+                    <div class="bg-green-600 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">💬</span>
+                            <span class="font-bold">微信精选</span>
+                        </div>
+                        <span class="text-xs bg-green-700 px-2 py-1 rounded" id="wechat-time">刚刚</span>
+                    </div>
+                    <div class="p-4 space-y-3 max-h-96 overflow-y-auto" id="wechat-news">
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="text-sm font-medium text-white mb-1">深度分析：美以打击伊朗的战略意图</div>
+                            <div class="text-xs text-gray-400">观察者网 · 10万+阅读</div>
+                        </div>
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="text-sm font-medium text-white mb-1">中东局势对全球经济的影响分析</div>
+                            <div class="text-xs text-gray-400">财经杂志 · 5万+阅读</div>
+                        </div>
+                        <div class="news-card bg-gray-700/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700">
+                            <div class="text-sm font-medium text-white mb-1">投资者如何应对地缘政治风险</div>
+                            <div class="text-xs text-gray-400">华尔街见闻 · 3万+阅读</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: 原油价格 -->
+    <div id="page2" class="page-content hidden">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <!-- Oil Price Cards -->
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-yellow-500/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-gray-400">布伦特原油</span>
+                        <span class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">+2.4%</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="brent-price">$73.45</div>
+                    <div class="text-sm text-gray-400">更新时间: 刚刚</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-blue-500/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-gray-400">WTI原油</span>
+                        <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">+2.1%</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="wti-price">$69.82</div>
+                    <div class="text-sm text-gray-400">更新时间: 刚刚</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-red-500/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-gray-400">迪拜原油</span>
+                        <span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">+2.8%</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2" id="dubai-price">$72.15</div>
+                    <div class="text-sm text-gray-400">更新时间: 刚刚</div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="bg-gray-800 rounded-xl p-6 mb-6">
+                <h2 class="text-lg font-bold mb-4">📈 原油价格走势（24小时）</h2>
+                <canvas id="oilChart" height="300"></canvas>
+            </div>
+
+            <!-- Price Table -->
+            <div class="bg-gray-800 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 bg-gray-700 font-bold">全球主要原油品种</div>
+                <div class="divide-y divide-gray-700">
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <span>布伦特原油 (Brent)</span>
+                        <div class="text-right">
+                            <div class="font-bold">$73.45</div>
+                            <div class="text-xs text-green-400">+1.72 (+2.4%)</div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <span>WTI原油</span>
+                        <div class="text-right">
+                            <div class="font-bold">$69.82</div>
+                            <div class="text-xs text-green-400">+1.44 (+2.1%)</div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <span>迪拜原油</span>
+                        <div class="text-right">
+                            <div class="font-bold">$72.15</div>
+                            <div class="text-xs text-green-400">+1.97 (+2.8%)</div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <span>欧佩克一揽子油价</span>
+                        <div class="text-right">
+                            <div class="font-bold">$71.85</div>
+                            <div class="text-xs text-green-400">+1.85 (+2.6%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 3: 贵金属价格 -->
+    <div id="page3" class="page-content hidden">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <!-- Metal Price Cards -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gradient-to-br from-yellow-900/50 to-gray-900 rounded-xl p-6 border border-yellow-500/30">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl">🥇</span>
+                        <div>
+                            <div class="text-gray-400">现货黄金</div>
+                            <div class="text-xs text-yellow-400">XAU/USD</div>
+                        </div>
+                    </div>
+                    <div class="text-5xl font-bold text-white mb-2" id="gold-price">$5,296.40</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-green-400">▲ $91.86</span>
+                        <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">+1.77%</span>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-gray-700/50 to-gray-900 rounded-xl p-6 border border-gray-500/30">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl">🥈</span>
+                        <div>
+                            <div class="text-gray-400">现货白银</div>
+                            <div class="text-xs text-gray-400">XAG/USD</div>
+                        </div>
+                    </div>
+                    <div class="text-5xl font-bold text-white mb-2" id="silver-price">$93.82</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-green-400">▲ $6.83</span>
+                        <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">+7.85%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-800 rounded-xl p-6">
+                    <h2 class="text-lg font-bold mb-4">🥇 黄金走势（7天）</h2>
+                    <canvas id="goldChart" height="250"></canvas>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-6">
+                    <h2 class="text-lg font-bold mb-4">🥈 白银走势（7天）</h2>
+                    <canvas id="silverChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Metal Details -->
+            <div class="bg-gray-800 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 bg-gray-700 font-bold">贵金属详细信息</div>
+                <div class="divide-y divide-gray-700">
+                    <div class="px-4 py-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold">🥇 黄金 (XAU/USD)</span>
+                            <span class="text-green-400">+1.77%</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <div class="text-gray-400">今开</div>
+                                <div>$5,204.54</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">最高</div>
+                                <div>$5,312.80</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">最低</div>
+                                <div>$5,198.20</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold">🥈 白银 (XAG/USD)</span>
+                            <span class="text-green-400">+7.85%</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <div class="text-gray-400">今开</div>
+                                <div>$86.99</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">最高</div>
+                                <div>$94.50</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">最低</div>
+                                <div>$86.50</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageNum) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            // Show selected page
+            document.getElementById('page' + pageNum).classList.remove('hidden');
+            // Update buttons
+            document.querySelectorAll('nav button').forEach((btn, idx) => {
+                if (idx + 1 === pageNum) {
+                    btn.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-gray-700');
+                    btn.classList.add('bg-red-600', 'text-white');
+                } else {
+                    btn.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-gray-700');
+                    btn.classList.remove('bg-red-600', 'text-white');
+                }
+            });
+        }
+
+        // Countdown Timer
+        let countdown = 600; // 10 minutes
+        function updateCountdown() {
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+            document.getElementById('countdown').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (countdown > 0) {
+                countdown--;
+            } else {
+                // Auto refresh data
+                refreshAllData();
+                countdown = 600;
+            }
+        }
+        setInterval(updateCountdown, 1000);
+
+        // Refresh all data
+        function refreshAllData() {
+            console.log('Refreshing data...');
+            updateTimestamps();
+            // In real implementation, fetch new data here
+        }
+
+        // Update timestamps
+        function updateTimestamps() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            ['sina-time', 'weibo-time', 'wechat-time'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = timeStr;
+            });
+        }
+
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Oil Chart
+            const oilCtx = document.getElementById('oilChart');
+            if (oilCtx) {
+                new Chart(oilCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '现在'],
+                        datasets: [{
+                            label: '布伦特原油',
+                            data: [71.2, 71.8, 72.5, 73.1, 72.8, 73.2, 73.45],
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'WTI原油',
+                            data: [67.8, 68.2, 68.9, 69.4, 69.1, 69.6, 69.82],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: 'white' } } },
+                        scales: {
+                            y: { 
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            },
+                            x: { 
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gold Chart
+            const goldCtx = document.getElementById('goldChart');
+            if (goldCtx) {
+                new Chart(goldCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['2/23', '2/24', '2/25', '2/26', '2/27', '2/28', '3/1'],
+                        datasets: [{
+                            label: '黄金',
+                            data: [4950, 5100, 5150, 5204, 5180, 5204, 5296],
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { 
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            },
+                            x: { 
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Silver Chart
+            const silverCtx = document.getElementById('silverChart');
+            if (silverCtx) {
+                new Chart(silverCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['2/23', '2/24', '2/25', '2/26', '2/27', '2/28', '3/1'],
+                        datasets: [{
+                            label: '白银',
+                            data: [82, 85, 87, 87, 86, 87, 93.82],
+                            borderColor: '#9ca3af',
+                            backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { 
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            },
+                            x: { 
+                                ticks: { color: '#9ca3af' },
+                                grid: { color: '#374151' }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        // Simulate real-time updates (in production, replace with actual API calls)
+        setInterval(() => {
+            // Random small price movements
+            const brent = 73.45 + (Math.random() - 0.5) * 0.2;
+            const wti = 69.82 + (Math.random() - 0.5) * 0.2;
+            const gold = 5296 + (Math.random() - 0.5) * 5;
+            const silver = 93.82 + (Math.random() - 0.5) * 0.5;
+            
+            document.getElementById('brent-price').textContent = '$' + brent.toFixed(2);
+            document.getElementById('wti-price').textContent = '$' + wti.toFixed(2);
+            document.getElementById('gold-price').textContent = '$' + gold.toFixed(2);
+            document.getElementById('silver-price').textContent = '$' + silver.toFixed(2);
+        }, 5000);
+    </script>
+</body>
+</html>
